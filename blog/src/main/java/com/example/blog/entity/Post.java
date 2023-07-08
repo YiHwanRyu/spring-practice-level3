@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 //@Setter
 @Entity
@@ -12,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "post")
 @NoArgsConstructor
 public class Post extends Timestamped{
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
@@ -21,6 +25,13 @@ public class Post extends Timestamped{
     private String username;
     @Column(name = "content", nullable = false, length = 500)
     private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    User user;
+
+    @OneToMany(mappedBy = "post")
+    private List<Comment> commentList = new ArrayList<>();
 
     public Post(PostRequestDto requestDto, String username) {
         this.title = requestDto.getTitle();

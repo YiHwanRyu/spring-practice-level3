@@ -19,4 +19,8 @@ public class Comment extends Timestamped {
     @Column(name = "content", nullable = false, length = 500)
     private String content;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+
 }
