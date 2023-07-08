@@ -1,5 +1,6 @@
 package com.example.blog.entity;
 
+import com.example.blog.dto.CommentRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,5 +23,14 @@ public class Comment extends Timestamped {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
+
+    public Comment(CommentRequestDto requestDto, String username) {
+        this.username = username;
+        this.content = requestDto.getContent();
+    }
+
+    public void update(CommentRequestDto requestDto) {
+        this.content = requestDto.getContent();
+    }
 
 }
