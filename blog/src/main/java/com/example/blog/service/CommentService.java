@@ -3,26 +3,25 @@ package com.example.blog.service;
 import com.example.blog.dto.CommentRequestDto;
 import com.example.blog.dto.CommentResponseDto;
 import com.example.blog.dto.MessageResponseDto;
-import com.example.blog.dto.PostRequestDto;
 import com.example.blog.entity.Comment;
-import com.example.blog.exception.ApiException;
+import com.example.blog.entity.UserRoleEnum;
 import com.example.blog.jwt.JwtUtil;
 import com.example.blog.repository.CommentRepository;
-import com.example.blog.repository.PostRepository;
+import com.example.blog.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 public class CommentService {
     private CommentRepository commentRepository;
+    private UserRepository userRepository;
     private JwtUtil jwtUtil;
 
-    public CommentService(CommentRepository commentRepository, JwtUtil jwtUtil) {
+    public CommentService(CommentRepository commentRepository, JwtUtil jwtUtil, UserRepository userRepository) {
+        this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.jwtUtil = jwtUtil;
     }
@@ -32,7 +31,7 @@ public class CommentService {
         String token = jwtUtil.substringToken(tokenValue);
 
         if(!jwtUtil.validateToken(token)){
-            throw new ApiException("토큰이 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
+            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
         }
 
         // 토큰에서 사용자 정보 가져오기
@@ -55,7 +54,7 @@ public class CommentService {
 
         // 토큰 검증
         if(!jwtUtil.validateToken(token)) {
-            throw new ApiException("토큰이 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
+            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
         }
 
         // 토큰에서 사용자 정보 가져오기
@@ -64,8 +63,11 @@ public class CommentService {
         // username
         String username = info.getSubject();
 
-        if(!username.equals(comment.getUsername())){
-            throw new ApiException("작성자만 수정할 수 있습니다.", HttpStatus.BAD_REQUEST);
+        // role
+        String role = info.get(JwtUtil.AUTHORIZATION_KEY, String.class);
+
+        if(!(role.equals(UserRoleEnum.ADMIN.toString()) || username.equals(comment.getUsername()))){
+            throw new RuntimeException("작성자만 수정할 수 있습니다.");
         }
 
         comment.update(requestDto);
@@ -82,16 +84,20 @@ public class CommentService {
 
         // 토큰 검증
         if(!jwtUtil.validateToken(token)) {
-            throw new ApiException("토큰이 유효하지 않습니다.", HttpStatus.BAD_REQUEST);
+            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
         }
 
         // 토큰에서 사용자 정보 가져오기
         Claims info = jwtUtil.getUserInfoFromToken(token);
+
         // username
         String username = info.getSubject();
 
-        if(!username.equals(comment.getUsername())){
-            throw new ApiException("작성자만 삭제할 수 있습니다.", HttpStatus.BAD_REQUEST);
+        // role
+        String role = info.get(JwtUtil.AUTHORIZATION_KEY, String.class);
+
+        if(!(role.equals(UserRoleEnum.ADMIN.toString()) || username.equals(comment.getUsername()))){
+            throw new RuntimeException("작성자만 삭제할 수 있습니다.");
         }
 
         commentRepository.delete(comment);

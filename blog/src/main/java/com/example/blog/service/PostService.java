@@ -4,7 +4,6 @@ import com.example.blog.dto.MessageResponseDto;
 import com.example.blog.dto.PostRequestDto;
 import com.example.blog.dto.PostResponseDto;
 import com.example.blog.entity.Post;
-import com.example.blog.entity.User;
 import com.example.blog.entity.UserRoleEnum;
 import com.example.blog.jwt.JwtUtil;
 import com.example.blog.repository.PostRepository;
@@ -37,7 +36,7 @@ public class PostService {
 
         // 토큰 검증
         if(!jwtUtil.validateToken(token)) {
-            throw new IllegalArgumentException("Token Error");
+            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
         }
 
         // 토큰에서 사용자 정보 가져오기
@@ -75,7 +74,7 @@ public class PostService {
 
         // 토큰 검증
         if(!jwtUtil.validateToken(token)) {
-            throw new IllegalArgumentException("Token Error");
+            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
         }
 
         // 토큰에서 사용자 정보 가져오기
@@ -87,8 +86,8 @@ public class PostService {
         String role = info.get(JwtUtil.AUTHORIZATION_KEY, String.class);
 
         // 사용자가 ADMIN 권한이거나 작성자일 때만 수정이 가능
-        if(!(role.equals(UserRoleEnum.ADMIN) || username.equals(post.getUsername()))) {
-            throw new IllegalArgumentException("해당 게시글을 작성한 사용자나 관리자가 아닙니다.");
+        if(!(role.equals(UserRoleEnum.ADMIN.toString()) || username.equals(post.getUsername()))) {
+            throw new RuntimeException("해당 게시글을 작성한 사용자나 관리자가 아닙니다.");
         }
 
         // post 수정(영속성 컨텍스트의 변경감지를 통해, 즉, requestDto에 들어온 객체로 post 객체(entity)를 업데이트 시킴)
@@ -108,7 +107,7 @@ public class PostService {
 
         // 토큰 검증
         if(!jwtUtil.validateToken(token)) {
-            throw new IllegalArgumentException("Token Error");
+            throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
         }
 
         // 토큰에서 사용자 정보 가져오기
@@ -120,8 +119,8 @@ public class PostService {
         String role = info.get(JwtUtil.AUTHORIZATION_KEY, String.class);
 
         // 사용자가 ADMIN 권한이거나 작성자일 때만 수정이 가능
-        if(!(role.equals(UserRoleEnum.ADMIN) || username.equals(post.getUsername()))) {
-            throw new IllegalArgumentException("해당 게시글을 작성한 사용자나 관리자가 아닙니다.");
+        if(!(role.equals(UserRoleEnum.ADMIN.toString()) || username.equals(post.getUsername()))) {
+            throw new RuntimeException("해당 게시글을 작성한 사용자나 관리자가 아닙니다.");
         }
 
         postRepository.delete(post);
