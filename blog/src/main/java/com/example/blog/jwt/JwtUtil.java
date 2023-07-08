@@ -1,6 +1,7 @@
 package com.example.blog.jwt;
 
 
+import com.example.blog.entity.UserRoleEnum;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -22,6 +23,10 @@ import java.util.Date;
 public class JwtUtil {
     // Header의 KEY 값
     public static final String AUTHORIZATION_HEADER = "Authorization";
+
+    // 사용자 권한 값의 KEY
+    public static final String AUTHORIZATION_KEY = "auth";
+
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
 
@@ -33,23 +38,25 @@ public class JwtUtil {
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
+    // 로그 설정
+    public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
+
+
     @PostConstruct
     public void init() {
         byte[] bytes = Base64.getDecoder().decode(secretKey); // Base64로 Encode되어있는 secretKey를 Decode하여 사용
         key = Keys.hmacShaKeyFor(bytes); // 새로운 시크릿키 인스턴스 생성
     }
 
-    // 로그 설정
-    public static final Logger logger = LoggerFactory.getLogger("JWT 관련 로그");
-
 
     // 1. JWT(토큰생성)
-    public String createToken(String username) {
+    public String createToken(String username, UserRoleEnum role) {
         Date date = new Date();
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(username) // 사용자 식별값(ID)
+                        .claim(AUTHORIZATION_KEY, role) // 사용자 권한
                         .setExpiration(new Date(date.getTime() + TOKEN_TIME)) // 생성 시간에 대한 만료시간
                         .setIssuedAt(date) // 발급일
                         .signWith(key, signatureAlgorithm) // 암호화 알고리즘

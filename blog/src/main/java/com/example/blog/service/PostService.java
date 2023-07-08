@@ -4,8 +4,11 @@ import com.example.blog.dto.MessageResponseDto;
 import com.example.blog.dto.PostRequestDto;
 import com.example.blog.dto.PostResponseDto;
 import com.example.blog.entity.Post;
+import com.example.blog.entity.User;
+import com.example.blog.entity.UserRoleEnum;
 import com.example.blog.jwt.JwtUtil;
 import com.example.blog.repository.PostRepository;
+import com.example.blog.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +19,14 @@ import java.util.List;
 
 @Service
 public class PostService {
+
+    private UserRepository userRepository;
     private PostRepository postRepository;
     private JwtUtil jwtUtil;
 
     //@Autowired // 생성자 1개일 때는 생략가능
-    public PostService(PostRepository postRepository, JwtUtil jwtUtil) {
+    public PostService(PostRepository postRepository, JwtUtil jwtUtil, UserRepository userRepository) {
+        this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.jwtUtil = jwtUtil;
     }
@@ -77,8 +83,12 @@ public class PostService {
         // username
         String username = info.getSubject();
 
-        if(!username.equals(post.getUsername())) {
-            throw new IllegalArgumentException("해당 게시글을 작성한 사용자가 아닙니다.");
+        // role
+        String role = info.get(JwtUtil.AUTHORIZATION_KEY, String.class);
+
+        // 사용자가 ADMIN 권한이거나 작성자일 때만 수정이 가능
+        if(!(role.equals(UserRoleEnum.ADMIN) || username.equals(post.getUsername()))) {
+            throw new IllegalArgumentException("해당 게시글을 작성한 사용자나 관리자가 아닙니다.");
         }
 
         // post 수정(영속성 컨텍스트의 변경감지를 통해, 즉, requestDto에 들어온 객체로 post 객체(entity)를 업데이트 시킴)
@@ -87,6 +97,7 @@ public class PostService {
         // responseDto 로 반환
         return new PostResponseDto(post);
     }
+
 
     public ResponseEntity<MessageResponseDto> deletePost(String tokenValue, Long id) {
         // 해당 post가 DB에 존재하는지 확인
@@ -105,8 +116,12 @@ public class PostService {
         // username
         String username = info.getSubject();
 
-        if(!username.equals(post.getUsername())) {
-            throw new IllegalArgumentException("해당 게시글을 작성한 사용자가 아닙니다.");
+        // role
+        String role = info.get(JwtUtil.AUTHORIZATION_KEY, String.class);
+
+        // 사용자가 ADMIN 권한이거나 작성자일 때만 수정이 가능
+        if(!(role.equals(UserRoleEnum.ADMIN) || username.equals(post.getUsername()))) {
+            throw new IllegalArgumentException("해당 게시글을 작성한 사용자나 관리자가 아닙니다.");
         }
 
         postRepository.delete(post);
