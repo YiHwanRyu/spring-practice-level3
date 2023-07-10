@@ -33,4 +33,7 @@ public class Comment extends Timestamped {
         this.content = requestDto.getContent();
     }
 
+    public void connectPost(Post post) {
+        this.post = post;
+    }
 }

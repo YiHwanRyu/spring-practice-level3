@@ -4,9 +4,11 @@ import com.example.blog.dto.CommentRequestDto;
 import com.example.blog.dto.CommentResponseDto;
 import com.example.blog.dto.MessageResponseDto;
 import com.example.blog.entity.Comment;
+import com.example.blog.entity.Post;
 import com.example.blog.entity.UserRoleEnum;
 import com.example.blog.jwt.JwtUtil;
 import com.example.blog.repository.CommentRepository;
+import com.example.blog.repository.PostRepository;
 import com.example.blog.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
@@ -16,12 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CommentService {
+    private PostRepository postRepository;
     private CommentRepository commentRepository;
-    private UserRepository userRepository;
     private JwtUtil jwtUtil;
 
-    public CommentService(CommentRepository commentRepository, JwtUtil jwtUtil, UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public CommentService(PostRepository postRepository, CommentRepository commentRepository, JwtUtil jwtUtil) {
+        this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.jwtUtil = jwtUtil;
     }
@@ -33,16 +35,23 @@ public class CommentService {
         if(!jwtUtil.validateToken(token)){
             throw new IllegalArgumentException("토큰이 유효하지 않습니다.");
         }
+        // 선택한 post 찾아옴
+        Post post = findPost(requestDto.getPostId());
 
         // 토큰에서 사용자 정보 가져오기
         Claims info = jwtUtil.getUserInfoFromToken(token);
         // username
         String username = info.getSubject();
 
+        // 댓글 객체
         Comment comment = new Comment(requestDto, username);
+
+        // 게시글과 연관관계 설정
+        comment.connectPost(post);
+
+        // 저장
         Comment saveComment = commentRepository.save(comment);
-        CommentResponseDto commentRequestDto = new CommentResponseDto(saveComment);
-        return commentRequestDto;
+        return new CommentResponseDto(saveComment);
     }
 
     @Transactional
@@ -67,7 +76,7 @@ public class CommentService {
         String role = info.get(JwtUtil.AUTHORIZATION_KEY, String.class);
 
         if(!(role.equals(UserRoleEnum.ADMIN.toString()) || username.equals(comment.getUsername()))){
-            throw new RuntimeException("작성자만 수정할 수 있습니다.");
+            throw new IllegalArgumentException("해당 댓글을 작성한 사용자나 관리자가 아닙니다.");
         }
 
         comment.update(requestDto);
@@ -97,7 +106,7 @@ public class CommentService {
         String role = info.get(JwtUtil.AUTHORIZATION_KEY, String.class);
 
         if(!(role.equals(UserRoleEnum.ADMIN.toString()) || username.equals(comment.getUsername()))){
-            throw new RuntimeException("작성자만 삭제할 수 있습니다.");
+            throw new IllegalArgumentException("해당 댓글을 작성한 사용자나 관리자가 아닙니다.");
         }
 
         commentRepository.delete(comment);
@@ -108,6 +117,12 @@ public class CommentService {
     private Comment findComment(Long id){
         return commentRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("선택하신 댓글은 존재하지 않습니다.")
+        );
+    }
+
+    private Post findPost(Long id) {
+        return postRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("선택한 포스트는 존재하지 않습니다.")
         );
     }
 

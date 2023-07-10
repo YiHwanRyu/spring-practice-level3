@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-//@Setter
 @Entity
 @Getter
 @Table(name = "post")
@@ -31,6 +30,7 @@ public class Post extends Timestamped{
     User user;
 
     @OneToMany(mappedBy = "post")
+    @OrderBy("createdAt DESC")
     private List<Comment> commentList = new ArrayList<>();
 
     public Post(PostRequestDto requestDto, String username) {
