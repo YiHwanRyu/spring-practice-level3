@@ -87,7 +87,7 @@ public class PostService {
 
         // 사용자가 ADMIN 권한이거나 작성자일 때만 수정이 가능
         if(!(role.equals(UserRoleEnum.ADMIN.toString()) || username.equals(post.getUsername()))) {
-            throw new RuntimeException("해당 게시글을 작성한 사용자나 관리자가 아닙니다.");
+            throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
         }
 
         // post 수정(영속성 컨텍스트의 변경감지를 통해, 즉, requestDto에 들어온 객체로 post 객체(entity)를 업데이트 시킴)
@@ -120,7 +120,7 @@ public class PostService {
 
         // 사용자가 ADMIN 권한이거나 작성자일 때만 수정이 가능
         if(!(role.equals(UserRoleEnum.ADMIN.toString()) || username.equals(post.getUsername()))) {
-            throw new RuntimeException("해당 게시글을 작성한 사용자나 관리자가 아닙니다.");
+            throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
         }
 
         postRepository.delete(post);

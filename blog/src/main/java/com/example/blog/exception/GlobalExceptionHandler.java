@@ -20,14 +20,14 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler({RuntimeException.class})
-    public ResponseEntity<MessageResponseDto> handleApiException(RuntimeException ex){
-        MessageResponseDto restApiException = new MessageResponseDto(ex.getMessage(), HttpStatus.BAD_REQUEST.toString());
-        return new ResponseEntity<>(
-                // HTTP body
-                restApiException,
-                // HTTP status code
-                HttpStatus.BAD_REQUEST
-        );
-    }
+//    @ExceptionHandler({RuntimeException.class})
+//    public ResponseEntity<MessageResponseDto> handleApiException(RuntimeException ex){
+//        MessageResponseDto restApiException = new MessageResponseDto(ex.getMessage(), HttpStatus.BAD_REQUEST.toString());
+//        return new ResponseEntity<>(
+//                // HTTP body
+//                restApiException,
+//                // HTTP status code
+//                HttpStatus.BAD_REQUEST
+//        );
+//    }
 }
