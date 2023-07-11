@@ -11,3 +11,6 @@ Spring practice(level 3) from Innovation Camp
   ![무제 drawio](https://github.com/YiHwanRyu/spring-practice-level3/assets/130289388/99fcdb61-e829-4d1c-af20-a943a99c5049)
 
 
+- API 설계
+
+  https://documenter.getpostman.com/view/28145508/2s946bCFLx
